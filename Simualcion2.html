@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Flujo 2 - Tráfico con congestión</title>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    </head>
+    <body>
+        <canvas id="flujo2" width="800" height="400"></canvas>
+        <p id="resultado"></p>
+
+        <script>
+            function flujoDeDatosCongestion(t) {
+                // Tráfico base + pico de congestión entre 5 y 7 horas
+                let base = 5 * Math.sin(t) + 10;
+                if (t >= 5 && t <= 7) {
+                    base += 10 * Math.exp(-Math.pow(t - 6, 2) / 0.1);
+                }
+                return base;
+            }
+
+            // Datos para 12 horas, paso 0.1
+            const labels = [];
+            const data = [];
+            const paso = 0.1;
+            for (let t = 0; t <= 12; t += paso) {
+                labels.push(t.toFixed(1));
+                data.push(flujoDeDatosCongestion(t));
+            }
+
+            // Crear gráfica con Chart.js
+            const ctx = document.getElementById("flujo2").getContext("2d");
+            const chart = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: "Flujo de datos (Mbps)",
+                            data: data,
+                            borderColor: "red",
+                            backgroundColor: "rgba(255,0,0,0.1)",
+                            fill: true,
+                            tension: 0.3,
+                        },
+                    ],
+                },
+                options: {
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: "Tiempo (horas)",
+                            },
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: "Mbps",
+                            },
+                            min: 0,
+                        },
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: "Tráfico con congestión simulada",
+                        },
+                    },
+                },
+            });
+
+            // Calcular el total de datos transferidos (integral numérica)
+            let total = 0;
+            for (let t = 0; t <= 12 - paso; t += paso) {
+                let y1 = flujoDeDatosCongestion(t);
+                let y2 = flujoDeDatosCongestion(t + paso);
+                total += ((y1 + y2) / 2) * paso; // método del trapecio
+            }
+
+            const resultado = `Total de datos transferidos en 12 horas: ${total.toFixed(
+                2
+            )} megabits`;
+            console.log(resultado);
+            document.getElementById("resultado").innerText = resultado;
+        </script>
+    </body>
+</html>

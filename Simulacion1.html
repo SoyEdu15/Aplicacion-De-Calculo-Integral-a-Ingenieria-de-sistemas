@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Flujo 1 - Tráfico normal</title>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    </head>
+    <body>
+        <canvas id="flujo1" width="800" height="400"></canvas>
+        <p id="resultado"></p>
+
+        <script>
+            // Función que modela el flujo de datos (en Mbps)
+            function flujoDeDatos(t) {
+                return 5 * Math.sin(t) + 10;
+            }
+
+            // Generar datos para 12 horas, paso de 0.1 horas (~6 minutos)
+            const labels = [];
+            const data = [];
+            const paso = 0.1;
+            for (let t = 0; t <= 12; t += paso) {
+                labels.push(t.toFixed(1));
+                data.push(flujoDeDatos(t));
+            }
+
+            // Crear gráfico con Chart.js
+            const ctx = document.getElementById("flujo1").getContext("2d");
+            const chart = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: "Flujo de datos (Mbps)",
+                            data: data,
+                            borderColor: "blue",
+                            backgroundColor: "rgba(0,0,255,0.1)",
+                            fill: true,
+                            tension: 0.3,
+                        },
+                    ],
+                },
+                options: {
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: "Tiempo (horas)",
+                            },
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: "Mbps",
+                            },
+                            min: 0,
+                        },
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: "Tráfico normal durante 12 horas",
+                        },
+                    },
+                },
+            });
+
+            // Método del trapecio para integrar desde t = 0 hasta t = 12
+            let total = 0;
+            for (let t = 0; t <= 12 - paso; t += paso) {
+                let y1 = flujoDeDatos(t);
+                let y2 = flujoDeDatos(t + paso);
+                total += ((y1 + y2) / 2) * paso; // Área del trapecio
+            }
+
+            // Mostrar resultado
+            const resultado = `Total de datos transferidos en 12 horas: ${total.toFixed(
+                2
+            )} megabits`;
+            console.log(resultado);
+            document.getElementById("resultado").innerText = resultado;
+        </script>
+    </body>
+</html>
